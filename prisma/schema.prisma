@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("PRISMA_DATABASE_URL")
+}
+
+model User {
+  id       String   @id @default(cuid())
+  email    String   @unique
+  name     String?
+  surname  String?
+  username String   @unique
+  password String
+  reviews  Review[]
+}
+
+model PANode {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  level       Int      // 1 to 4 constraint
+  parentId    String?
+  parent      PANode?  @relation("NodeToNode", fields: [parentId], references: [id])
+  children    PANode[] @relation("NodeToNode")
+  reviews     Review[]
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int      // 1 to 5
+  comment   String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  nodeId    String
+  node      PANode   @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
